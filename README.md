@@ -13,7 +13,7 @@ Stored procedure por request (`dbo.usp_UnitLife`, Microsoft SQL Server / Airlink
 |---|---|---|---|
 | `u` | `AirlinkDR.dbo.Receiving` | GCN (único) | gcn, imei, po |
 | `un` | `AirlinkDR.dbo.Unit` | IMEI | model, color, capacity, carrier |
-| `sk` | `AirlinkDR.dbo.PRD_JV_Skus` | Model + Color + Capacity de Unit | itemnumber (`Partnumber`), item_description |
+| `sk` | `AirlinkDR.dbo.PRD_JV_Skus` | Model + Color + Capacity de Unit; carrier ATT → item `.ATT`, Unlocked/N/A → `.GENERIC` | itemnumber (`Partnumber`), item_description |
 | `c` | — | *regla pendiente* | enclosure / backglass / lcd condition |
 | `rt` | `AirlinkDR.dbo.PRD_JV_ROUTING` | (Enclosure, BackGlass, LCD) | route |
 

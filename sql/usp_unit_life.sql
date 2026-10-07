@@ -6,6 +6,7 @@
      u   AirlinkDR.dbo.Receiving       por GCN  -> imei, po        (GCN es unico)
      un  AirlinkDR.dbo.Unit            por IMEI -> model, color, capacity, carrier
      sk  AirlinkDR.dbo.PRD_JV_Skus              -> itemnumber (Partnumber), item_description
+                                         por Model+Color+Capacity + carrier (ATT / GENERIC)
      c   condiciones de enclosure / backglass / lcd  (regla pendiente)
      rt  AirlinkDR.dbo.PRD_JV_ROUTING  por (Enclosure, BackGlass, LCD) -> route
 
@@ -191,18 +192,19 @@ BEGIN
     FROM @list AS g
     JOIN AirlinkDR.dbo.Receiving AS u
         ON u.GCN = g.GCN
+    -- IMEI es unico en Unit (la unidad conserva su IMEI aunque cambie de GCN)
+    LEFT JOIN AirlinkDR.dbo.Unit AS un
+        ON un.IMEI = u.IMEI
     OUTER APPLY (
-        SELECT TOP 1 x.Model, x.Color, x.Capacity, x.Carrier
-        FROM AirlinkDR.dbo.Unit AS x
-        WHERE x.IMEI = u.IMEI
-        ORDER BY (SELECT NULL)  -- TODO: el IMEI se repite en Unit; definir cual fila tomar
-    ) AS un
-    OUTER APPLY (
+        -- Carrier ATT -> item .ATT ; Unlocked / N/A / cualquier otro -> item .GENERIC
+        -- (p.ej. 15 Pro Black Titanium 256GB: ATT = 99760000074029, Generic = 99760000074125)
         SELECT TOP 1 x.Partnumber, x.item_description
         FROM AirlinkDR.dbo.PRD_JV_Skus AS x
         WHERE x.Model    = un.Model
           AND x.Color    = un.Color
           AND x.Capacity = un.Capacity
+          AND x.item_description LIKE '%.' + CASE WHEN un.Carrier IN ('ATT', 'AT&T') THEN 'ATT'
+                                                  ELSE 'GENERIC' END
     ) AS sk
     CROSS APPLY (
         -- TODO: reglas de las 3 condiciones (en mayusculas, igual que el Excel)
